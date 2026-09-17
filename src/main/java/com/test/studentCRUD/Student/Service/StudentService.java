@@ -1,6 +1,7 @@
 package com.test.studentCRUD.Student.Service;
 
 import com.test.studentCRUD.Configuration.ResponseGlobal;
+import com.test.studentCRUD.Exception.StudentNotFoundException;
 import com.test.studentCRUD.Student.DTO.StudentDto;
 import com.test.studentCRUD.Student.Entity.Address;
 import com.test.studentCRUD.Student.Entity.Student;
@@ -51,7 +52,12 @@ public class StudentService {
     }
 
     public Student getStudentById(Long id) {
-        return studentRepos.findById(id).orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+        try{
+            return studentRepos.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found with id: " + id));
+        }
+        catch (Exception e){
+            throw new StudentNotFoundException("Student not found with id: " + id);
+        }
     }
 
     public List<Student> getAllStudents() {
@@ -91,3 +97,22 @@ public class StudentService {
 
 
 }
+
+
+
+
+//Http Request Codes
+
+//There are 5 group s of HTTP status codes, each representing a different category of response.
+// These groups are:
+
+//1xx Informational responses. Like - Request has been Received and server is continuing to process it .
+
+//2xx Successs. its Like  - Request was successfully recived and server understood and accepted it .
+
+//3xx Redirection. its Like - Further action needs to be taken in order to complete the request.
+
+//4xx Client errors. its like - the request has a problem on the client side and server recieved the request but the request cannot be successfully processed or executed.
+
+//5xx Server errors. where the request was valid but the server failed to fulfill it.
+// 500 internal server error

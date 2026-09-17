@@ -2,8 +2,11 @@ package com.test.studentCRUD.Configuration;
 
 import com.test.studentCRUD.Student.Entity.Student;
 import lombok.Data;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @Data
+//@RestControllerAdvice
+//insdie Rest controller advice when i add it into my class i will properly handles my exception and i will return the proper response to the client.
 
 public class ResponseGlobal<T> {
 
