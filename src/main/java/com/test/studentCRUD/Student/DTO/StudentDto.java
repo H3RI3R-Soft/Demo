@@ -25,4 +25,6 @@ public class StudentDto {
 
     private int pincode;
 
+    private String password;
+
 }

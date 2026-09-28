@@ -1,10 +1,13 @@
 package com.test.studentCRUD.Student.Service;
 
 import com.test.studentCRUD.Configuration.ResponseGlobal;
+import com.test.studentCRUD.Configuration.SecurityConfig;
 import com.test.studentCRUD.Exception.StudentNotFoundException;
 import com.test.studentCRUD.Student.DTO.StudentDto;
 import com.test.studentCRUD.Student.Entity.Address;
+import com.test.studentCRUD.Student.Entity.Login;
 import com.test.studentCRUD.Student.Entity.Student;
+import com.test.studentCRUD.Student.Repo.LoginRepository;
 import com.test.studentCRUD.Student.Repo.StudentRepos;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +19,8 @@ import java.util.List;
 public class StudentService {
 
     private final StudentRepos studentRepos;
+    private final LoginRepository loginRepository;
+    private final SecurityConfig securityConfig;
 
     public ResponseGlobal<StudentDto> createStudent(StudentDto student) {
 
@@ -47,7 +52,14 @@ public class StudentService {
         newStudent.setAddress(address);
         studentRepos.save(newStudent);
 
-        return ResponseGlobal.onSuccess("Student has been Created well.",student);
+        Login login = new Login();
+        login.setPassword(student.getPassword());
+        login.setEmail(student.getEmail());
+        login.setName(student.getName());
+        loginRepository.save(login);
+
+
+        return ResponseGlobal.onSuccess("Student and login details are being set for Student.",student);
 
     }
 

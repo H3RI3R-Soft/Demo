@@ -1,5 +1,6 @@
 package com.test.studentCRUD.Configuration;
 
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
@@ -16,14 +17,33 @@ public class JWTService {
     private final SecretKey  key =  Keys.hmacShaKeyFor(secretKey.getBytes());
 
 
-    public String generateToken (Authentication authentication){
+    public String generateToken (String email,String name){
         return Jwts.builder()
-                .setSubject(authentication.getName())
+                .setSubject(email)
+                .claim("name",name)
+                .claim("email",email)
                 .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + 86400000)) // 1 day expiration
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(key)
                 .compact();
     }
+
+    public Claims getClaims(String token){
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String getEmailFromToken(String token){
+        return getClaims(token).getSubject();
+    }
+
+    public String getNameFromToken(String token){
+        return getClaims(token).get("name",String.class);
+    }
+
 
 
 
