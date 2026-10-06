@@ -1,6 +1,7 @@
 package com.test.studentCRUD.Configuration;
 
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.security.core.Authentication;
@@ -37,14 +38,36 @@ public class JWTService {
     }
 
     public String getEmailFromToken(String token){
-        return getClaims(token).getSubject();
+        String RemoveBearerPrefix = token.replace("Bearer ", "");
+        //RemoveBearerPrefix = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXRpazExQGdtYWlsLmNvbSIsIm5hbWUiOiJSaXRpayBTb25pIiwiZW1haWwiOiJyaXRpazExQGdtYWlsLmNvbSIsImlhdCI6MTc5MTI2OTQ1MSwiZXhwIjoxNzkxMzA1NDUxfQ.2A5QtjB1euPhKRfjLXSlYNMOGV__SdwANJ0ugI8qIqM"
+        return getClaims(RemoveBearerPrefix).get("email",String.class);
+
     }
 
     public String getNameFromToken(String token){
-        return getClaims(token).get("name",String.class);
+        String RemoveBearerPrefix = token.replace("Bearer ", "");
+
+        return getClaims(RemoveBearerPrefix).get("name",String.class);
     }
+    public boolean validateToken(String token){
+        try {
+            Jwts.parserBuilder()
+                    .setSigningKey(key)
+                    .build()
+                    .parseClaimsJws(token);
+            return true;
 
+        }
+        catch (JwtException | IllegalArgumentException e ){
+            return false;
+        }
 
-
-
+    }
+    public boolean validateAuthorizationHeader(String authorizationHeader) {
+        if (authorizationHeader == null || !authorizationHeader.startsWith("Bearer ")) {
+            return false;
+        }
+        String token = authorizationHeader.substring(7);
+        return validateToken(token);
+    }
 }

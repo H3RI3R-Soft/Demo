@@ -2,7 +2,6 @@ package com.test.studentCRUD.Student.Service;
 
 import com.test.studentCRUD.Configuration.ResponseGlobal;
 import com.test.studentCRUD.Configuration.SecurityConfig;
-import com.test.studentCRUD.Exception.StudentNotFoundException;
 import com.test.studentCRUD.Student.DTO.StudentDto;
 import com.test.studentCRUD.Student.Entity.Address;
 import com.test.studentCRUD.Student.Entity.Login;
@@ -63,17 +62,24 @@ public class StudentService {
 
     }
 
-    public Student getStudentById(Long id) {
+    public ResponseGlobal<Student> getStudentById(Long id) {
         try{
-            return studentRepos.findById(id).orElseThrow(() -> new StudentNotFoundException("Student not found with id: " + id));
+            Student student = studentRepos.findById(id).orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+            return ResponseGlobal.onSuccess("Student retrieved successfully.", student);
         }
         catch (Exception e){
-            throw new StudentNotFoundException("Student not found with id: " + id);
+            throw new RuntimeException("Error retrieving student with id: " + id, e);
+
         }
     }
 
-    public List<Student> getAllStudents() {
-        return studentRepos.findAll();
+    public ResponseGlobal<List<Student>> getAllStudents() {
+
+        List<Student> students = studentRepos.findAll();
+        if (students.isEmpty()) {
+            return ResponseGlobal.onFailure("No students found.");
+        }
+        return ResponseGlobal.onSuccess("Students retrieved successfully.", students);
     }
 
 
