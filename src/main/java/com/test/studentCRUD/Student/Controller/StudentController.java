@@ -2,6 +2,7 @@ package com.test.studentCRUD.Student.Controller;
 
 import com.test.studentCRUD.Configuration.JWTService;
 import com.test.studentCRUD.Configuration.ResponseGlobal;
+import com.test.studentCRUD.Student.DTO.AdminDTO;
 import com.test.studentCRUD.Student.DTO.StudentDto;
 import com.test.studentCRUD.Student.Entity.Student;
 import com.test.studentCRUD.Student.Service.StudentService;
@@ -27,37 +28,22 @@ public class StudentController {
     }
 
     @GetMapping("/getAllStudent")
-    public ResponseGlobal<List<Student>> getAllStudents(@RequestHeader("Authorization") String token) {
-
-        //token  = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXRpazExQGdtYWlsLmNvbSIsIm5hbWUiOiJSaXRpayBTb25pIiwiZW1haWwiOiJyaXRpazExQGdtYWlsLmNvbSIsImlhdCI6MTc5MTI2OTQ1MSwiZXhwIjoxNzkxMzA1NDUxfQ.2A5QtjB1euPhKRfjLXSlYNMOGV__SdwANJ0ugI8qIqM"
-        if(token.isEmpty() || token == null){
-            return ResponseGlobal.onFailure("Authorization header is missing.Please add token to the request.");
+    public ResponseGlobal<List<Student>> getAllStudents(@RequestHeader(value = "Authorization", required = false) String token) {
+        if (token != null) {
+            String email = jwtService.getEmailFromToken(token);
+            String name = jwtService.getNameFromToken(token);
+            String role = jwtService.getRoleFromToken(token);
+            System.out.println("Calling getAllStudent with token - Email: " + email + ", Name: " + name + ", Role: " + role);
         }
-        if (!jwtService.validateAuthorizationHeader(token)) {
-            return ResponseGlobal.onFailure("Invalid or missing token. Access denied.");
-        }
-        String emailFromToken = jwtService.getEmailFromToken(token);
-        System.out.println("This is the email "+emailFromToken+" We got from the token -:"+token);
-        String removePrefixfromToken = token.replace("Bearer ", "");
-        System.out.println("this si the token without bearer prefix "+removePrefixfromToken);
-
-        // from here we wil ge thte namr from the token
-
-        String nameFromToken = jwtService.getNameFromToken(token);
-        System.out.println("This is the name we got from the token "+nameFromToken+" and this is the token we got from the request header "+token);
-
         return studentService.getAllStudents();
     }
 
     @GetMapping("/getStudentById/{id}")
-   public ResponseGlobal<Student> getStudentById(@RequestHeader("Authorization")String token,@PathVariable Long id ){
-        if(token.isEmpty() || token == null){
-            return ResponseGlobal.onFailure("Token is provided but its is Empty.");
+    public ResponseGlobal<Student> getStudentById(@PathVariable Long id, @RequestHeader(value = "Authorization", required = false) String token) {
+        if (token != null) {
+            String email = jwtService.getEmailFromToken(token);
+            System.out.println("Calling getStudentById for ID " + id + " - Email: " + email);
         }
-        if(!jwtService.validateAuthorizationHeader(token)){
-            return ResponseGlobal.onFailure("Invalid or missing token. Access denied.");
-        }
-
         return studentService.getStudentById(id);
     }
 
@@ -78,5 +64,9 @@ public class StudentController {
     }
 
 
+    @PostMapping("/createAdmin")
+    public ResponseGlobal<AdminDTO> createAdmin(@Valid @RequestBody AdminDTO admin){
+        return studentService.createAdmin(admin);
+    }
 
 }

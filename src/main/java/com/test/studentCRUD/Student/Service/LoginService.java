@@ -29,7 +29,8 @@ public class LoginService {
         if (checkPassword == null) {
             return ResponseGlobal.onFailure("Invalid password for email: " + email);
         }
-        String jwt  = jwtService.generateToken(email, userExistsOrNot.getName());
+        String role = checkPassword.getRole();
+        String jwt  = jwtService.generateToken(email, userExistsOrNot.getName(),role);
         return ResponseGlobal.onSuccess("Login successful", jwt);
 
     }

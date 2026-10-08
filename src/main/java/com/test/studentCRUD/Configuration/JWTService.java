@@ -18,11 +18,12 @@ public class JWTService {
     private final SecretKey  key =  Keys.hmacShaKeyFor(secretKey.getBytes());
 
 
-    public String generateToken (String email,String name){
+    public String generateToken (String email,String name, String role){
         return Jwts.builder()
                 .setSubject(email)
                 .claim("name",name)
                 .claim("email",email)
+                .claim("role",role)
                 .setIssuedAt(new Date())
                 .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60 * 10)) // 10 hours
                 .signWith(key)
@@ -30,24 +31,24 @@ public class JWTService {
     }
 
     public Claims getClaims(String token){
+        String cleanToken = token.startsWith("Bearer ") ? token.substring(7) : token;
         return Jwts.parserBuilder()
                 .setSigningKey(key)
                 .build()
-                .parseClaimsJws(token)
+                .parseClaimsJws(cleanToken)
                 .getBody();
     }
 
     public String getEmailFromToken(String token){
-        String RemoveBearerPrefix = token.replace("Bearer ", "");
-        //RemoveBearerPrefix = "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJyaXRpazExQGdtYWlsLmNvbSIsIm5hbWUiOiJSaXRpayBTb25pIiwiZW1haWwiOiJyaXRpazExQGdtYWlsLmNvbSIsImlhdCI6MTc5MTI2OTQ1MSwiZXhwIjoxNzkxMzA1NDUxfQ.2A5QtjB1euPhKRfjLXSlYNMOGV__SdwANJ0ugI8qIqM"
-        return getClaims(RemoveBearerPrefix).get("email",String.class);
+        return getClaims(token).get("email", String.class);
+    }
 
+    public String getRoleFromToken(String token){
+        return getClaims(token).get("role", String.class);
     }
 
     public String getNameFromToken(String token){
-        String RemoveBearerPrefix = token.replace("Bearer ", "");
-
-        return getClaims(RemoveBearerPrefix).get("name",String.class);
+        return getClaims(token).get("name", String.class);
     }
     public boolean validateToken(String token){
         try {

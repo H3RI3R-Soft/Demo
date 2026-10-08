@@ -2,13 +2,20 @@ package com.test.studentCRUD.Student.Service;
 
 import com.test.studentCRUD.Configuration.ResponseGlobal;
 import com.test.studentCRUD.Configuration.SecurityConfig;
+import com.test.studentCRUD.Student.DTO.AdminDTO;
 import com.test.studentCRUD.Student.DTO.StudentDto;
+import com.test.studentCRUD.Student.ENUM.RoleEnum;
 import com.test.studentCRUD.Student.Entity.Address;
+import com.test.studentCRUD.Student.Entity.Admin;
 import com.test.studentCRUD.Student.Entity.Login;
 import com.test.studentCRUD.Student.Entity.Student;
+import com.test.studentCRUD.Student.Repo.AdminRepo;
 import com.test.studentCRUD.Student.Repo.LoginRepository;
 import com.test.studentCRUD.Student.Repo.StudentRepos;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.security.web.session.DisableEncodeUrlFilter;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -17,9 +24,12 @@ import java.util.List;
 @RequiredArgsConstructor
 public class StudentService {
 
+    private static final Logger log = LoggerFactory.getLogger(StudentService.class);
     private final StudentRepos studentRepos;
     private final LoginRepository loginRepository;
+    private final AdminRepo adminRepo;
     private final SecurityConfig securityConfig;
+    private final String secretKey = "uebefubqrufbhrbqburfuiqbefiubqinbf"; // Replace with
 
     public ResponseGlobal<StudentDto> createStudent(StudentDto student) {
 
@@ -113,7 +123,41 @@ public class StudentService {
     }
 
 
+    public ResponseGlobal<AdminDTO> createAdmin(AdminDTO adminDTO) {
 
+        if (adminDTO.getEmail() == null || adminDTO.getEmail().isEmpty()) {
+            return ResponseGlobal.onFailure("Email is required for Admin creation.");
+        }
+        if (adminDTO.getPassword() == null || adminDTO.getPassword().isEmpty()) {
+            return ResponseGlobal.onFailure("Password is required for Admin creation.");
+        }
+        if (adminDTO.getSecretKey() == null || adminDTO.getSecretKey().isEmpty()) {
+            return ResponseGlobal.onFailure("Secret Key is required for Admin creation.");
+        }
+        if (!adminDTO.getSecretKey().equals(secretKey)) {
+            return ResponseGlobal.onFailure("Invalid Secret Key provided for Admin creation.");
+        }
+
+        boolean ifEmailExists = loginRepository.existsByEmail(adminDTO.getEmail());
+
+        if(ifEmailExists){
+            return ResponseGlobal.onFailure("This Email is already being used by another Admin or Student.");
+        }
+        Admin admin = new Admin();
+        admin.setEmail(adminDTO.getEmail());
+        admin.setName(adminDTO.getName());
+        adminRepo.save(admin);
+
+        Login login = new Login();
+        login.setEmail(adminDTO.getEmail());
+        login.setPassword(adminDTO.getPassword());
+        login.setName(adminDTO.getName());
+        login.setRole(String.valueOf(RoleEnum.ADMIN));
+        loginRepository.save(login);
+
+        return ResponseGlobal.onSuccess("Admin has been created successfully.",adminDTO);
+
+    }
 }
 
 
